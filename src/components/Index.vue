@@ -15,43 +15,38 @@
 </template>
 
 <script>
+import db from "@/firebase/init";
 export default {
   name: "Index",
   data() {
     return {
-      smoothies: [
-        {
-          title: "Ninja Brew",
-          slug: "ninja-brew",
-          ingredients: ["bananas", "coffee", "milk"],
-          id: '1'
-        },
-        {
-          title: 'Morning Wood',
-          slug: 'morning-mood',
-          ingredients: ['mango', 'lime', 'juice'],
-          id: '2'
-        },
-        {  
-          title: 'asa sdadsasd',
-          slug: 'morning-mood',
-          ingredients: ['mango', 'lime', 'juice'],
-          id: '3'
-        }
-      ]
+      smoothies: []
     };
   },
   methods: {
     deleteSmoothie(id) {
-      this.smoothies = this.smoothies.filter(smoothie => {
-        return smoothie.id !=  id
-              // return this.smoothies = this.smoothies.splice(id, 1)
-
-      })
-      // console.log(this.smoothies);
-      // this.smoothies.splice(shtogod, 1);
-
+      // delete doc from firestore
+      db.collection("smoothies").doc(id).delete()
+      //onda ga brise lokalno
+        .then(() => {
+          this.smoothies = this.smoothies.filter(smoothie => {
+            return smoothie.id != id;
+ 
+          });
+        });
     }
+  },
+  created() {
+    //fetch data from firestore
+    db.collection("smoothies")
+      .get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          let smoothie = doc.data();
+          smoothie.id = doc.id;
+          this.smoothies.push(smoothie);
+        });
+      });
   }
 };
 </script>
@@ -62,18 +57,18 @@ export default {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-gap: 30px;
-  margin-top: 60px
+  margin-top: 60px;
 }
 .index h2 {
   font-size: 1.8em;
   text-align: center;
-  margin-top: 0px
+  margin-top: 0px;
 }
 .index .ingredients {
   margin: 30px auto;
 }
 .index .ingredients li {
-  display: inline-block
+  display: inline-block;
 }
 .index .delete {
   position: absolute;
@@ -81,6 +76,6 @@ export default {
   right: 4px;
   cursor: pointer;
   color: #aaa;
-  font-size: 1.4em
+  font-size: 1.4em;
 }
 </style>
